@@ -13,19 +13,26 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { twMerge } from "tailwind-merge";
 import NextLink from "next/link";
 import { ApiResponse } from "../_types/ApiResponse";
+import Cookies from "js-cookie";
+import { z } from "zod"; // zod をインポート
 
 const Page: React.FC = () => {
   const c_Email = "email";
   const c_Password = "password";
+  const c_RememberMe = "rememberMe";
+  const REMEMBER_ME_COOKIE_NAME = "remember_email";
 
   const [isPending, setIsPending] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoginCompleted, setIsLoginCompleted] = useState(false);
 
   // フォーム処理関連の準備と設定
-  const formMethods = useForm<LoginRequest>({
+  const formMethods = useForm<LoginRequest>({ // LoginRequest 型を使用
     mode: "onChange",
-    resolver: zodResolver(loginRequestSchema),
+    resolver: zodResolver(loginRequestSchema), // loginRequestSchema を直接使用
+    defaultValues: {
+      rememberMe: false, // デフォルトではチェックなし
+    },
   });
   const fieldErrors = formMethods.formState.errors;
 
@@ -41,8 +48,17 @@ const Page: React.FC = () => {
   useEffect(() => {
     // クエリパラメータからメールアドレスの初期値をセット
     const searchParams = new URLSearchParams(window.location.search);
-    const email = searchParams.get(c_Email);
-    formMethods.setValue(c_Email, email || "");
+    const emailFromQuery = searchParams.get(c_Email);
+
+    // クッキーからメールアドレスを取得し、クエリパラメータよりも優先
+    const emailFromCookie = Cookies.get(REMEMBER_ME_COOKIE_NAME);
+
+    // 初期値として設定
+    formMethods.setValue(c_Email, emailFromQuery || emailFromCookie || "");
+    // クッキーにメールアドレスがあれば、rememberMe チェックボックスもチェックする
+    if (emailFromCookie) {
+      formMethods.setValue(c_RememberMe, true);
+    }
   }, []);
 
   // ルートエラーメッセージのクリアに関する設定
@@ -63,7 +79,7 @@ const Page: React.FC = () => {
   }, [isLoginCompleted]);
 
   // フォームの送信処理
-  const onSubmit = async (formValues: LoginRequest) => {
+  const onSubmit = async (formValues: LoginRequest) => { // LoginRequest 型を使用
     const ep = "/api/login";
 
     console.log(JSON.stringify(formValues));
@@ -88,6 +104,15 @@ const Page: React.FC = () => {
         setRootError(body.message);
         return;
       }
+
+      // 「次回からログインIDを自動入力する」チェックボックスの状態に応じてメールアドレスをクッキーに保存/削除
+      if (formValues.rememberMe) {
+        // セキュアな設定を適用: path, sameSite, secure を設定
+        Cookies.set(REMEMBER_ME_COOKIE_NAME, formValues.email, { expires: 30, path: "/", sameSite: "strict", secure: true });
+      } else {
+        Cookies.remove(REMEMBER_ME_COOKIE_NAME, { path: "/", sameSite: "strict", secure: true });
+      }
+
       setIsLoginCompleted(true);
       setUserProfile(userProfileSchema.parse(body.payload));
     } catch (e) {
@@ -141,8 +166,23 @@ const Page: React.FC = () => {
             autoComplete="off"
           />
           <ErrorMsgField msg={fieldErrors.password?.message} />
-          <ErrorMsgField msg={fieldErrors.root?.message} />
         </div>
+
+        {/* 「次回からログインIDを自動入力する」チェックボックスを追加 */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id={c_RememberMe}
+            {...formMethods.register(c_RememberMe)}
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            disabled={isPending || isLoginCompleted}
+          />
+          <label htmlFor={c_RememberMe} className="ml-2 block text-sm text-gray-900">
+            次回からログインIDを自動入力する
+          </label>
+        </div>
+
+        <ErrorMsgField msg={fieldErrors.root?.message} />
 
         <Button
           variant="indigo"

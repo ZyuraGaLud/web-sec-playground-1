@@ -1,4 +1,3 @@
-// 更新後は
 // npx prisma db push
 // npx prisma generate
 // ( >Developer: Reload Window ) 
@@ -37,6 +36,8 @@ model User {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   lastLoginAt DateTime? @map("last_login_at")
+  failedLoginAttempts Int @default(3) // ログイン失敗回数
+  lockoutUntil        DateTime?       // ロックアウト解除時刻}
 
   sessions     Session[]
 

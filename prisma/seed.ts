@@ -3,6 +3,7 @@
 import { v4 as uuid } from "uuid";
 import { PrismaClient, Role, Region } from "@prisma/client";
 import { UserSeed, userSeedSchema } from "../src/app/_types/UserSeed";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -33,6 +34,12 @@ async function main() {
       name: "仕様 曖昧子",
       password: "password2222",
       email: "user02@example.com",
+      role: Role.USER,
+    },
+      {
+      name: "手素羅 小江内",
+      password: "password4322",
+      email: "user07@example.com",
       role: Role.USER,
     },
   ];
@@ -99,6 +106,11 @@ async function main() {
         id: "A-004",
         name: "	パワポで月収100万：架空案件で学ぶ「営業芸」完全読本",
         price: 15000,
+      },
+      {
+        id: "A-005",
+        name: "	生かさず殺さずのクリスマス",
+        price: 3000,
       },
     ],
   });

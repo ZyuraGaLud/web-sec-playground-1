@@ -21,6 +21,7 @@ const Page: React.FC = () => {
   const c_Name = "name";
   const c_Email = "email";
   const c_Password = "password";
+  const c_ConfirmPassword = "confirmPassword"; // confirmPassword の定数を追加
 
   const router = useRouter();
 
@@ -45,7 +46,8 @@ const Page: React.FC = () => {
   // ルートエラーメッセージのクリアに関する設定
   useEffect(() => {
     const subscription = formMethods.watch((value, { name }) => {
-      if (name === c_Email || name === c_Password) {
+      // confirmPassword も含めてエラーをクリア
+      if (name === c_Email || name === c_Password || name === c_ConfirmPassword) {
         formMethods.clearErrors("root");
       }
     });
@@ -137,6 +139,23 @@ const Page: React.FC = () => {
             autoComplete="off"
           />
           <ErrorMsgField msg={fieldErrors.password?.message} />
+        </div>
+
+        {/* 確認用パスワードフィールドを追加 */}
+        <div>
+          <label htmlFor={c_ConfirmPassword} className="mb-2 block font-bold">
+            パスワード（確認用）
+          </label>
+          <TextInputField
+            {...formMethods.register(c_ConfirmPassword)}
+            id={c_ConfirmPassword}
+            placeholder="*****"
+            type="password"
+            disabled={isPending || isSignUpCompleted}
+            error={!!fieldErrors.confirmPassword}
+            autoComplete="off"
+          />
+          <ErrorMsgField msg={fieldErrors.confirmPassword?.message} />
           <ErrorMsgField msg={fieldErrors.root?.message} />
         </div>
 
@@ -144,11 +163,8 @@ const Page: React.FC = () => {
           variant="indigo"
           width="stretch"
           className="tracking-widest"
-          disabled={
-            !formMethods.formState.isValid ||
-            formMethods.formState.isSubmitting ||
-            isSignUpCompleted
-          }
+          // disabled の条件を簡略化
+          disabled={isPending || isSignUpCompleted}
         >
           登録
         </Button>

@@ -6,4 +6,7 @@ export const loginRequestSchema = z.object({
   password: passwordSchema,
 });
 
-export type LoginRequest = z.infer<typeof loginRequestSchema>;
+// rememberMe フィールドをオプションとして追加
+export type LoginRequest = z.infer<typeof loginRequestSchema> & {
+  rememberMe?: boolean;
+};

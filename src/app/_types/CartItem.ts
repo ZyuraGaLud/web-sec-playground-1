@@ -2,8 +2,8 @@ import { z } from "zod"; // zodライブラリのインポート
 
 // バリデーションスキーマ（データが満たすべき制約条件や構造を定義）
 export const cartItemSchema = z.object({
-  productId: z.string().min(1), // 1文字以上の「文字列」
-  quantity: z.number().int().min(0), // 0以上の「整数値」
+  productId: z.string().min(1).max(20), // 1文字以上の「文字列」
+  quantity: z.number().int().min(0).max(20), // 0以上の「整数値」
 });
 
 // バリデーションスキーマをもとに「CartItem型」を生成
