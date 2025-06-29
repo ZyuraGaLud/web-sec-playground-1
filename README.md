@@ -1,3 +1,5 @@
+実装にかかった時間 12時間
+
 ログイン画面の例です。
 ![ログイン画面](a.png "ログイン画面")
 
@@ -92,5 +94,4 @@ npm run dev
 npm run build
 npm run start
 データベースの状態確認
-
 npx prisma studio
